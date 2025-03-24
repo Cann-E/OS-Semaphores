@@ -34,6 +34,7 @@ void *compareString(void *void_ptr)
     for (int i=0;i<info->cmpStr.length();i++){
         if (info->currLetter == info->cmpStr[i]){
             cout<<info->currLetter;
+            found=true;
         }
     }
 
@@ -74,7 +75,7 @@ int main()
     //pthread create
     for(int i=0;i<nThreads;i++){
         if(pthread_create(&tid[i],NULL,compareString,(void*)&arg[i])){
-            cerr<<"erro";
+            cerr<<"error creating thread";
         }
     }
     
