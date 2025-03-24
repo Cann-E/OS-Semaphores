@@ -1,0 +1,124 @@
+#include <pthread.h>     // For POSIX threads
+#include <iostream>      // For cin, cout
+#include <string>        // For std::string
+#include <semaphore.h>   // (not used in this code — safe to ignore)
+
+using namespace std;
+
+// Struct to pass data from main to each thread
+struct infoFromMain
+{
+    int threadID;        // Thread's unique ID (used to control turn order)
+    char currLetter;     // The letter this thread is responsible for
+    string cmpStr;       // The string this thread compares against
+};
+
+// Mutex and condition variable to synchronize threads
+static pthread_mutex_t bsem; // Binary semaphore (mutex lock)
+static pthread_cond_t waitTurn = PTHREAD_COND_INITIALIZER; // Used to block threads until it's their turn
+static int turn = 0; // Keeps track of which thread can run
+
+// Thread function: compares one letter to the target string
+void *compareString(void *void_ptr)
+{
+    // Lock the mutex before entering critical section
+    pthread_mutex_lock(&bsem);
+
+    // Cast the argument back into our struct pointer
+    struct infoFromMain* info = (struct infoFromMain*) void_ptr;
+
+    // Wait until it's this thread's turn
+    while (turn != info->threadID)
+    {
+        pthread_cond_wait(&waitTurn, &bsem);
+    }
+
+    // Search for currLetter inside cmpStr
+    bool found = false;  
+    // This flag starts as false.
+    // It will be set to true if the current letter is found in the comparison string.
+
+    for (int i = 0; i < info->cmpStr.length(); i++)  
+    // Loop through each character in the comparison string (cmpStr)
+{
+        if (info->currLetter == info->cmpStr[i])  
+        // Check if the thread's assigned letter matches the current character in cmpStr
+        {
+            found = true;  
+            // Set the flag to true to indicate a match was found
+
+            cout << info->currLetter;  
+            // Print the matching character to the output
+
+            break;  
+            // Exit the loop early since we already found the match
+            // (This avoids printing the same letter more than once if it appears multiple times)
+    }
+}
+
+
+    // If the letter was not found in cmpStr, print *
+    if (!found)
+    {
+        cout << "*";
+    }
+
+    // Move to the next thread's turn
+    turn++;
+
+    // Wake up all waiting threads
+    pthread_cond_broadcast(&waitTurn);
+
+    // Unlock mutex after leaving critical section
+    pthread_mutex_unlock(&bsem);
+
+    return nullptr;
+}
+
+int main()
+{
+    std::string threadStr, cmpStr;
+
+    // Input: first string is threadStr, second is cmpStr
+    std::cin >> threadStr >> cmpStr;
+
+    // Number of threads = length of the input string
+    int nThreads = threadStr.size();
+
+    // Allocate arrays for thread IDs and argument structs
+    pthread_t *tid = new pthread_t[nThreads];
+    infoFromMain *arg = new infoFromMain[nThreads];
+
+    // Initialize mutex
+    pthread_mutex_init(&bsem, nullptr);
+
+    // Fill out data for each thread
+    for (int i = 0; i < nThreads; i++)
+    {
+        arg[i].threadID = i;              // Thread number
+        arg[i].currLetter = threadStr[i]; // The letter this thread will check
+        arg[i].cmpStr = cmpStr;           // Comparison string (same for all)
+    }
+
+    // Create threads
+    for (int i = 0; i < nThreads; i++)
+    {
+        //creating threads
+        if (pthread_create(&tid[i], NULL, compareString, (void *)&arg[i]))
+        {
+            cerr << "Err creating thread\n";
+        }
+    }
+
+    // Wait for all threads to finish
+    for (int i = 0; i < nThreads; i++)
+        pthread_join(tid[i], nullptr);
+
+    // Free up memory
+    if (arg != nullptr)
+        delete[] arg;
+    if (tid != nullptr)
+        delete[] tid;
+
+    return 0;
+}
