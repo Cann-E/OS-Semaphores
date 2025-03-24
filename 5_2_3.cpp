@@ -64,7 +64,7 @@ int main()
     }
 
     for(int i=0;i<nThreads;i++){
-        if(pthread_create(&tid[i],NULL,printDigit,(void *)arg[i])){
+        if(pthread_create(&tid[i],NULL,printDigit,(void *)&arg[i])){
             cerr<<"Error"<<endl;
         }
     }
