@@ -21,14 +21,30 @@ static int turn = 0; // value to control which child thread enters the critical 
 
 void *printDigit(void *void_ptr)
 {
-    //GOAL: given a string of numbers, increment any even digits in this number, and keep the odd digits the same, using mutex semaphores to do so.
-    
-    
-    
+    pthread_mutex_lock(&bsem);
+    struct infoFromMain * Can=(struct infoFromMain*)void_ptr;
+    while(Can->threadID !=turn){
+        pthread_cond_wait(&waitTurn,&bsem);
+    }
 
+    if(Can->digit%2==0){
+        cout<<Can->digit+1
+    }
+    else{
+        cout<<Cam->digit;
+    }
+
+    turn++;
+
+
+
+    pthread_mutex_unlock(&bsem);
+    //GOAL: given a string of numbers, increment any even digits in this number, and keep the odd digits the same, using mutex semaphores to do so.
+    pthread_mutex_lock(&bsem);
+    pthread_cond_broadcast(&waitTurn);
+    pthread_mutex_unlock(&bsem);
     return nullptr;
 }
-
 
 int main()
 {
@@ -43,12 +59,17 @@ int main()
     
     for(int i=0;i<nThreads;i++)
     {
-       
+        arg[i].threadID=i;
+        arg[i].digit=input[i]-'0';
+        
+    }
+    //create
+    for(int i=0;i<nThreads;i++){
+        if(pthread_create(&tid[i],NULL,printDigit,(void *)arg[i]){
+            std::cerr<<"Error create"<<std::endl;
+        }
     }
 
-    //pthread create
-    
-    
     for(int i=0;i<nThreads;i++)
         pthread_join(tid[i],nullptr);
    

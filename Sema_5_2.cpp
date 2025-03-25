@@ -22,32 +22,28 @@ static int turn = 0;
 
 void *compareString(void *void_ptr)
 {
-  //mutex semaphores
   pthread_mutex_lock(&bsem);
-  struct infoFromMain* info= (struct infoFromMain*)void_ptr;//deref
-  while(turn != info->threadID){
+  struct infoFromMain* info =(struct infoFromMain *)void_ptr;
+  while(info->threadID !=turn){
     pthread_cond_wait(&waitTurn,&bsem);
   }
   bool found=false;
-  for(int i=0;i<info->cmpStr.length();i++){
-    if (info->currLetter == info->cmpStr[i]){
-        found = true;
-        cout<<info->currLetter;
+  for(int i=0;i<info->cmpStr.lenght();i++){
+    if(info->currLetter == info->cmpStr[i]){
+      found=true;
+      cout<<info->currLetter;
     }
-
   }
-  if (!found){
+  if(!found){
     cout<<"*";
   }
+
   turn++;
-
-
   pthread_mutex_unlock(&bsem);
-
-  pthread_mutex_unlock(&bsem);
-  pthread_cond_broadcast(&waitTurn);
+  
   pthread_mutex_lock(&bsem);
-
+  pthread_cond_broadcast(&waitTurn);
+  pthread_mutex_unlock(&bsem);
   
     return nullptr;
 }
@@ -70,13 +66,15 @@ int main()
       arg[i].cmpStr=cmpStr;
       
     }
-    for (int i=0;i<nThreads;i++){
-        if(pthread_create(&tid[i],NULL,compareString,(void *)arg[i])){
-            cerr<<"er";
-        }
-    }
+    
 
     //pthread create
+    for(int i=0;i<nThreads;i++){
+      if(pthread_create(&tid[i],NULL,compareString,(void *)&arg[i])){
+        std::cerr<<"ERror"<<std::endl;
+      }
+    }
+
     
 
     for(int i=0;i<nThreads;i++)

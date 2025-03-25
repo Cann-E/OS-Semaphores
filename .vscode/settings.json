@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "sema_5": "cpp"
+        "sema_5": "cpp",
+        "atomic": "cpp"
     }
 }

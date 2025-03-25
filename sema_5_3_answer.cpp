@@ -25,30 +25,8 @@ static int turn = 0;
 
 void *compareString(void *void_ptr)
 {
-  //mutex semaphores
-  pthread_mutex_lock(&bsem);
-    struct infoFromMain* info = (struct infoFromMain*)void_ptr;
-    while (turn != info->threadID){
-      pthread_cond_wait(&waitTurn, &bsem);
-    }
 
-    bool found = false;
-    for (int i=0; i<info->cmpStr.length(); i++){
-      if (info->currLetter == info->cmpStr[i]){
-        found = true;
-        cout << info->currLetter;
-      }
-    }
-
-    if (!found){
-      cout << "*";
-    }
-    turn++;
-  pthread_mutex_unlock(&bsem);
-
-  pthread_mutex_lock(&bsem);
-    pthread_cond_broadcast(&waitTurn);
-  pthread_mutex_unlock(&bsem);
+  
     return nullptr;
 }
 
@@ -65,17 +43,12 @@ int main()
     
     for(int i=0;i<nThreads;i++){
       //instantiation
-      arg[i].threadID = i;
-      arg[i].currLetter = threadStr[i];
-      arg[i].cmpStr = cmpStr;
+     
+      
     }
 
     //pthread create
-    for(int i=0;i<nThreads;i++){
-      if (pthread_create(&tid[i], nullptr, compareString, &arg[i])){
-        cerr << "Thread creation failed" << endl;
-      }
-    }
+    
 
     for(int i=0;i<nThreads;i++)
         pthread_join(tid[i],nullptr);

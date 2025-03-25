@@ -15,33 +15,7 @@ static int currentTurn = 0;
 
 void* matchAndPrint(void* arg)
 {
-    pthread_mutex_lock(&mtx);
-    struct TaskInfo* TI = (struct TaskInfo*)arg;
-
-    while(TI->id != currentTurn){
-        pthread_cond_wait(&cond,&mtx);
-    }
-    bool found = false;
-    for(int i =0;i<TI->filter.length();i++){
-        if(TI->letter == TI->filter[i]){
-            found = true;
-            cout<<TI->letter;
-            break;
-        }
-    }
-
-    if(!found){
-        cout<<"#";
-    }
-
-
-    currentTurn++;
-    pthread_mutex_unlock(&mtx);
-
-
-    pthread_mutex_lock(&mtx);
-    pthread_cond_broadcast(&cond);
-    pthread_mutex_unlock(&mtx);
+   
     
 
     return nullptr;
@@ -59,6 +33,7 @@ int main()
     pthread_mutex_init(&mtx, NULL);
 
     for (int i = 0; i < n; i++) {
+        //ins
         jobs[i].id=i;
         jobs[i].letter=inputStr[i];
         jobs[i].filter=filterStr;
@@ -66,11 +41,7 @@ int main()
     }
         
 
-    for (int i = 0; i < n; i++) {
-        if(pthread_create(&threads[i],NULL,matchAndPrint,(void*)&jobs[i])){
-            cerr<<"Error";
-        }
-    }
+    //pthread_create
     
 
     for (int i = 0; i < n; i++) {
